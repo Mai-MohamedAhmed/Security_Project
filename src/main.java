@@ -1,4 +1,6 @@
 import javax.crypto.BadPaddingException;
+import java.nio.ByteBuffer;
+
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
@@ -48,20 +50,7 @@ public class main {
 		// TODO Auto-generated method stub
 		/////////////////////// email to send //////////////////////////////////////////////
 		byte[] msg = "I hope this mail finds you well :D ".getBytes();
-		/////////////////////////////////////////////////////////////////////////////////////
-		byte[] encrypted_msg,decrypted_msg;
-         /////////////////////////////////////pair keys////////////////////////////////////////////////
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
- 		//keyGen.initialize(keylength);
-        KeyPair pair = keyGen.generateKeyPair();
- 		PrivateKey privateKey = pair.getPrivate();
- 		PublicKey publicKey = pair.getPublic();
- 		System.out.println("Public     :: " + publicKey.getEncoded());
-        System.out.println("public :: " + publicKey);
-        System.out.println("Private    :: " + privateKey.getEncoded());
-        System.out.println("Private :: " + privateKey);
-       
-         //////////////////////////////////////Session Key/////////////////////////////////////////////
+        //////////////////////////////////////Session Key/////////////////////////////////////////////
 		KeyGenerator kg = KeyGenerator.getInstance("DES");
 		kg.init(56);
 		SecretKey  k = kg.generateKey();
@@ -74,27 +63,34 @@ public class main {
 		System.out.println("Secret Key value     :: " + DatatypeConverter.printBase64Binary(k.getEncoded()));
 		///////////////////////////////////////////Email Encryption//////////////////////////////////////////
 		Cipher cipher = Cipher.getInstance("DES");
-		encrypted_msg=enc(cipher,msg,k);
-		System.out.println("Encrypted email    :: " +new String(encrypted_msg));
+		byte[] encrypted_msg=enc(cipher,msg,k);
 		
 		///////////////////////////////////////////key encryption////////////////////////////////////////
 		RSA rsa = new RSA(64);
 		byte[] keyBytes = k.getEncoded();
 		byte[] encryptedKey = rsa.encrypt(keyBytes);
-		
-		//encryptedKey==RSA_enc(k,publicKey);
+
 		/////////////////////////////////////////////Send email/////////////////////////////////////
-		 String sent_msg;
-		 //sent_msg=encryptedKey.toString()+new String(encrypted_msg);
-		 sent_msg=btos(encryptedKey)+new String(encrypted_msg);
-		 System.out.println("Sent msg :: "+sent_msg);
-		 ////////////////////////////////////////////Receive email/////////////////////////////////
-		 
-		 ////////////////////////////////////////////Key Decryption/////////////////////////////////////////
-		 byte[] decryptedKey = rsa.decrypt(encryptedKey);
-		 Key ks = new SecretKeySpec(decryptedKey,0, decryptedKey.length,"DES");
+		ByteBuffer sent_msg = ByteBuffer.allocate((encryptedKey.length + encrypted_msg.length) + 4);
+		sent_msg.putInt(encryptedKey.length);
+		sent_msg.put(encryptedKey);
+		sent_msg.put(encrypted_msg);
+		System.out.println("Sent msg :: "+DatatypeConverter.printBase64Binary(sent_msg.array()));
+		////////////////////////////////////////////Receive email/////////////////////////////////
+		ByteBuffer received_msg = ByteBuffer.wrap(sent_msg.array());
+	    int keyLength = received_msg.getInt();
+	    byte[] enc_key = new byte[keyLength];
+        received_msg.get(enc_key);
+        byte[] encryptedMessage = new byte[received_msg.remaining()];
+        received_msg.get(encryptedMessage);
+        
+		////////////////////////////////////////////Key Decryption/////////////////////////////////////////
+		byte[] decryptedKey = rsa.decrypt(enc_key);
+		SecretKey ks = new SecretKeySpec(decryptedKey,0, decryptedKey.length,"DES");
+		System.out.println("decryptedkey  "+DatatypeConverter.printBase64Binary(ks.getEncoded()));
+
 		///////////////////////////////////////////Email Decryption///////////////////////////////////////////
-		decrypted_msg=dec(cipher,encrypted_msg,k);
+		byte[] decrypted_msg=dec(cipher,encryptedMessage,ks);
 		System.out.println("Decrypted email    :: " +new String(decrypted_msg));
 		
 		       
