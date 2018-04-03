@@ -1,4 +1,5 @@
 import javax.crypto.BadPaddingException;
+
 import java.nio.ByteBuffer;
 
 import javax.crypto.Cipher;
@@ -6,6 +7,11 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -24,6 +30,18 @@ import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.KeyPair;
+class PuPair{
+	BigInteger e, n; 
+	public PuPair(BigInteger e1, BigInteger n1){
+		e=e1;n=n1;
+	}
+}
+class PrPair{
+	BigInteger d, n;
+	public PrPair(BigInteger d1, BigInteger n1){
+		d=d1;n=n1;
+	}
+}
 public class main {
 
 	public static byte[] enc(Cipher cipher,byte[] email,SecretKey k) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException
@@ -46,7 +64,26 @@ public class main {
 		}
 		return s;
 	}
-	public static void main(String[] args) throws IllegalBlockSizeException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException{
+	
+	public static PuPair getPublic()throws IOException{
+		BufferedReader pu = new BufferedReader(new FileReader(new File("Public.txt")));
+		pu.readLine();
+		BigInteger e = new BigInteger(pu.readLine());
+		pu.readLine();
+		BigInteger n = new BigInteger(pu.readLine());
+		return new PuPair(e,n);
+	}
+	public static PrPair getPrivate() throws IOException{
+		BufferedReader pr = new BufferedReader(new FileReader("Private.txt"));
+		pr.readLine();
+		BigInteger d = new BigInteger(pr.readLine());
+		pr.readLine();
+		BigInteger n = new BigInteger(pr.readLine());
+		return new PrPair(d,n);
+	}
+	
+	
+	public static void main(String[] args) throws IllegalBlockSizeException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IOException{
 		// TODO Auto-generated method stub
 		/////////////////////// email to send //////////////////////////////////////////////
 		byte[] msg = "I hope this mail finds you well :D ".getBytes();
@@ -66,9 +103,10 @@ public class main {
 		byte[] encrypted_msg=enc(cipher,msg,k);
 		
 		///////////////////////////////////////////key encryption////////////////////////////////////////
-		RSA rsa = new RSA(64);
+		RSA rsa = new RSA(1024);
 		byte[] keyBytes = k.getEncoded();
-		byte[] encryptedKey = rsa.encrypt(keyBytes);
+		PuPair pu = getPublic();
+		byte[] encryptedKey = rsa.encrypt(keyBytes,pu.e,pu.n);
 
 		/////////////////////////////////////////////Send email/////////////////////////////////////
 		ByteBuffer sent_msg = ByteBuffer.allocate((encryptedKey.length + encrypted_msg.length) + 4);
@@ -85,7 +123,8 @@ public class main {
         received_msg.get(encryptedMessage);
         
 		////////////////////////////////////////////Key Decryption/////////////////////////////////////////
-		byte[] decryptedKey = rsa.decrypt(enc_key);
+        PrPair pr = getPrivate();
+		byte[] decryptedKey = rsa.decrypt(enc_key,pr.d,pr.n);
 		SecretKey ks = new SecretKeySpec(decryptedKey,0, decryptedKey.length,"DES");
 		System.out.println("decryptedkey  "+DatatypeConverter.printBase64Binary(ks.getEncoded()));
 
