@@ -30,18 +30,7 @@ import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.KeyPair;
-class PuPair{
-	BigInteger e, n; 
-	public PuPair(BigInteger e1, BigInteger n1){
-		e=e1;n=n1;
-	}
-}
-class PrPair{
-	BigInteger d, n;
-	public PrPair(BigInteger d1, BigInteger n1){
-		d=d1;n=n1;
-	}
-}
+
 public class main {
 
 	public static byte[] enc(Cipher cipher,byte[] email,SecretKey k) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException

@@ -17,6 +17,18 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+class PuPair{
+	BigInteger e, n; 
+	public PuPair(BigInteger e1, BigInteger n1){
+		e=e1;n=n1;
+	}
+}
+class PrPair{
+	BigInteger d, n;
+	public PrPair(BigInteger d1, BigInteger n1){
+		d=d1;n=n1;
+	}
+}
 public class RSA {
 	public static String btos(byte [] ba){
 		String s = "";
