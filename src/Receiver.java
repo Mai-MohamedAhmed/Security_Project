@@ -60,13 +60,10 @@ public class Receiver {
 		   Message messages[] = emailFolder.search(sender);
 		   
 		   //4) retrieve the messages from the folder in an array and print it  
-		 //  Message messages[] = emailFolder.getMessages();  
-		   System.out.println(messages.length);
 		   String m=null;
 		   for (int i = messages.length-1; i >messages.length-2&&messages.length!=0; i--) {  
 		    Message message = messages[i];  
 		    System.out.println("---------------------------------");  
-		    System.out.println("Email Number " + (i + 1));  
 		    System.out.println("Subject: " + message.getSubject());  
 		    System.out.println("From: " + message.getFrom()[0]);  
 		    System.out.println("Text: " + message.getContent().toString());
@@ -78,12 +75,12 @@ public class Receiver {
 		   return m;
 
 		  
-		  } catch (NoSuchProviderException e) {e.printStackTrace();}   
-		  catch (MessagingException e) {e.printStackTrace();}  
-		  catch (IOException e) {e.printStackTrace();}  
+		  } catch (NoSuchProviderException e) {System.out.println(e.getMessage());}   
+		  catch (MessagingException e) {System.out.println(e.getMessage());}  
+		  catch (IOException e) {System.out.println(e.getMessage());}  
 		  return null;
 		 }  
-	public static void main(String[] args) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
+	public static void main(String[] args) throws NoSuchAlgorithmException, NoSuchPaddingException,  IllegalBlockSizeException, BadPaddingException, IOException {
 		// TODO Auto-generated method stub
 	////////////////////////////////////////////Receive email/////////////////////////////////
 	Scanner sc=new Scanner(System.in);  
@@ -112,15 +109,22 @@ public class Receiver {
 		System.out.println("msg "+DatatypeConverter.printBase64Binary(encryptedMessage));
 		////////////////////////////////////////////Key Decryption/////////////////////////////////////////
 		PrPair pr = getPrivate();
-		RSA rsa = new RSA(1024);
+		RSA rsa = new RSA(64);
+		//rsa.generate();
 		byte[] decryptedKey = rsa.decrypt(enc_key,pr.d,pr.n);
 		SecretKey ks = new SecretKeySpec(decryptedKey,0, decryptedKey.length,"DES");
 		System.out.println("decryptedkey  "+DatatypeConverter.printBase64Binary(ks.getEncoded()));
 		
 		///////////////////////////////////////////Email Decryption///////////////////////////////////////////
 		Cipher cipher = Cipher.getInstance("DES");
-		byte[] decrypted_msg=dec(cipher,encryptedMessage,ks);
-		System.out.println("Decrypted email    :: " +new String(decrypted_msg));
+		byte[] decrypted_msg;
+		try {
+			decrypted_msg = dec(cipher,encryptedMessage,ks);
+			System.out.println("Decrypted email    :: " +new String(decrypted_msg));
+		} catch (InvalidKeyException e) {
+			// TODO Auto-generated catch block
+	           System.out.println(e.getMessage());
+		}
 	}
 	else
 	{

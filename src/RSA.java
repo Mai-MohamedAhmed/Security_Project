@@ -50,7 +50,8 @@ public class RSA {
 		bits = b;
 		System.out.println("RSA "+bits+" bits");
 	}
-	
+	public RSA(){
+	}
 	public void generate() throws IOException{
 		BigInteger n;
 		BigInteger d;

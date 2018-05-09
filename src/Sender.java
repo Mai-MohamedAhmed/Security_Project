@@ -70,7 +70,8 @@ public class Sender {
 			System.out.println("Your message has been sent");
 
 		} catch (MessagingException e) {
-			throw new RuntimeException(e);
+			//throw new RuntimeException(e);
+           System.out.println(e.getMessage());
 		}
 	}
 	public static void main(String[] args) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
@@ -105,8 +106,7 @@ public class Sender {
 	byte[] encrypted_msg=enc(cipher,msg,k);
 	
 	///////////////////////////////////////////key encryption////////////////////////////////////////
-	RSA rsa = new RSA(128);
-	rsa.generate();
+	RSA rsa = new RSA();
 	byte[] keyBytes = k.getEncoded();
 	PuPair pu = getPublic();
 	byte[] encryptedKey = rsa.encrypt(keyBytes,pu.e,pu.n);
