@@ -51,6 +51,7 @@ public class RSA {
 		bits = b;
 		System.out.println("RSA "+bits+" bits");
 	}
+	public RSA(){}
 	//Generate new Private, Public Pair
 	public void generate() throws IOException{
 		BigInteger n;

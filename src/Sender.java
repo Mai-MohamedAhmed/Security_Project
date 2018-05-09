@@ -92,7 +92,6 @@ public class Sender {
 
 	//////////////////////////////////////Session Key/////////////////////////////////////////////
 	KeyGenerator kg = KeyGenerator.getInstance("DES");
-	kg.init(56);
 	SecretKey  k = kg.generateKey();
 	
 	//Make sure the key has a positive value for RSA encryption
